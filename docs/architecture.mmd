@@ -1,0 +1,56 @@
+flowchart TB
+  subgraph clients [Clients]
+    CLI[CLI]
+    External[External Integrations]
+    WebUI[Management UI Web]
+  end
+
+  subgraph api [API Engine]
+    REST[REST API]
+  end
+
+  subgraph core [Core]
+    MgmtEngine[Management Engine]
+    ExtEngine[Extension Engine]
+    LLMCalling[LLM Calling Engine]
+    Translator[Translator]
+  end
+
+  subgraph backends [Backends]
+    LocalBackend[Local e.g. Ollama vLLM]
+    RemoteBackend[Remote Gateway]
+  end
+
+  subgraph data [Data and Analysis]
+    PostgreDB[(PostgreDB Engine)]
+    PredAgent[Prediction Agent]
+    LearnAgent[Learning Agent]
+  end
+
+  subgraph identity [Identity and Secrets]
+    UserProfile[User Profile]
+    CredStore[Credential Store]
+  end
+
+  CLI --> REST
+  External --> REST
+  WebUI --> REST
+
+  REST --> MgmtEngine
+  REST --> UserProfile
+  MgmtEngine --> ExtEngine
+  MgmtEngine --> LLMCalling
+  ExtEngine --> LLMCalling
+  LLMCalling --> CredStore
+  LLMCalling --> Translator
+  Translator --> LocalBackend
+  Translator --> RemoteBackend
+  MgmtEngine --> PostgreDB
+  MgmtEngine --> UserProfile
+  PredAgent --> PostgreDB
+  PredAgent -.->|suggest budget or model| MgmtEngine
+  LearnAgent --> PostgreDB
+  LearnAgent -.->|API patterns and cost| PredAgent
+  LearnAgent -.->|cost and routing hints| LLMCalling
+  UserProfile --> PostgreDB
+  CredStore --> PostgreDB
